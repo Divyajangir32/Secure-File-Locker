@@ -1,28 +1,40 @@
-# 🔐 Secure File Locker using AES Encryption
+🔐 Secure File Locker
 
-A Windows desktop application developed in Python to securely encrypt and decrypt files using AES cryptography.
+A desktop application to securely encrypt and store sensitive files using AES-256 encryption.
+Built with Python and Tkinter to provide a simple, fast and secure file-locking solution.
 
-## 🚀 Features
-- Password based file encryption & decryption  
-- Protects confidential files from unauthorized access  
-- Simple and user-friendly GUI  
-- Lightweight and fast
+🚀 Features
 
-## 🛠 Technologies Used
-- Python  
-- Tkinter  
-- Cryptography (AES)
+- AES-256 file encryption
+- Password-based secure file locking
+- Hide/Show password toggle
+- Encrypted file manager (View/Delete)
+- Protection against weak passwords
+- Brute-force attempt limit
+- User-friendly GUI
 
-## 📌 How It Works
-1. User enters a password  
-2. File is encrypted and stored securely  
-3. Only correct password can decrypt the file  
-4. Decrypted file is restored safely
+🛠 Tech Stack
 
-## 🎯 Use Cases
-- Protect personal documents  
-- Secure academic certificates  
-- Store confidential data safely  
+- Python 3
+- Tkinter
+- Cryptography (Fernet / AES-256)
+- Git & GitHub
 
-## 👩‍💻 Developer
-**Divya Jangir**
+⚙ How it Works
+
+- User enters a strong master password
+- File is encrypted and stored securely in a locker folder
+- File can only be decrypted using the same password
+- Wrong attempts are limited for security
+
+
+▶ How to Run
+pip install cryptography
+python app.py
+
+
+
+👩‍💻 Developed By
+
+Divya Jangir
+Cyber Security Enthusiast | Open Source Developer
