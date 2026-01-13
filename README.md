@@ -1,4 +1,11 @@
-🔐 Secure File Locker
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![Tkinter](https://img.shields.io/badge/GUI-Tkinter-green)
+![Encryption](https://img.shields.io/badge/Encryption-AES--256-red)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
+
+
+# 🔐 Secure File Locker
 
 A desktop application to securely encrypt and store sensitive files using AES-256 encryption.
 Built with Python and Tkinter to provide a simple, fast and secure file-locking solution.
@@ -13,14 +20,14 @@ Built with Python and Tkinter to provide a simple, fast and secure file-locking 
 - Brute-force attempt limit
 - User-friendly GUI
 
-##🛠 Tech Stack
+## 🛠 Tech Stack
 
 - Python 3
 - Tkinter
 - Cryptography (Fernet / AES-256)
 - Git & GitHub
 
-##⚙ How it Works
+## ⚙ How it Works
 
 - User enters a strong master password
 - File is encrypted and stored securely in a locker folder
@@ -28,7 +35,7 @@ Built with Python and Tkinter to provide a simple, fast and secure file-locking 
 - Wrong attempts are limited for security
 
 
-▶ How to Run
+## ▶ How to Run
 pip install cryptography
 python app.py
 
@@ -39,7 +46,7 @@ python app.py
 
 
 
-👩‍💻 Developed By
+## 👩‍💻 Developed By
 
-Divya Jangir
+**Divya Jangir**
 Cyber Security Enthusiast | Open Source Developer
