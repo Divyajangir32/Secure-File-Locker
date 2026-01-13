@@ -13,14 +13,14 @@ Built with Python and Tkinter to provide a simple, fast and secure file-locking 
 - Brute-force attempt limit
 - User-friendly GUI
 
-🛠 Tech Stack
+##🛠 Tech Stack
 
 - Python 3
 - Tkinter
 - Cryptography (Fernet / AES-256)
 - Git & GitHub
 
-⚙ How it Works
+##⚙ How it Works
 
 - User enters a strong master password
 - File is encrypted and stored securely in a locker folder
@@ -31,6 +31,11 @@ Built with Python and Tkinter to provide a simple, fast and secure file-locking 
 ▶ How to Run
 pip install cryptography
 python app.py
+
+## 🖥 Application Preview
+
+![Secure File Locker Preview](https://github.com/user-attachments/assets/21d8be82-66e8-4856-bc92-7acba58d4c8d)
+
 
 
 
