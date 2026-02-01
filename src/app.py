@@ -1,129 +1,169 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
+import os
 from crypto_utils import encrypt_file, decrypt_file
-import os, re
-
-attempts = 0
-MAX_ATTEMPTS = 3
 
 root = tk.Tk()
 root.title("Secure File Locker")
-root.geometry("420x360")
-root.resizable(False, False)
-root.config(bg="#0F172A")
+root.geometry("1100x650")
+root.configure(bg="#0f172a")
+root.iconbitmap("icon.ico")
 
-# Title
-tk.Label(root, text="🔐 Secure File Locker",
-         font=("Segoe UI",18,"bold"),
-         fg="white", bg="#0F172A").pack(pady=16)
+# ---------------- PASSWORD ----------------
+password_var = tk.StringVar()
 
-tk.Label(root, text="Enter Your Secret Password",
-         fg="white", bg="#0F172A",
-         font=("Segoe UI",11)).pack()
-
-password_entry = tk.Entry(root, show="*", width=28, font=("Segoe UI",12))
-password_entry.pack(pady=8)
-
-# ---------- SHOW / HIDE PASSWORD ----------
-show_pwd = False
 def toggle_password():
-    global show_pwd
-    if show_pwd:
-        password_entry.config(show="*")
-        eye_btn.config(text="👁 Show")
-        show_pwd = False
+    if password_entry.cget("show") == "":
+        password_entry.config(show="•")
+        show_btn.config(text="Show")
     else:
         password_entry.config(show="")
-        eye_btn.config(text="🙈 Hide")
-        show_pwd = True
+        show_btn.config(text="Hide")
 
-eye_btn = tk.Button(root, text="👁 Show", bg="#0F172A", fg="white",
-                    relief="flat", font=("Segoe UI",10,"bold"),
-                    command=toggle_password)
-eye_btn.pack(pady=4)
-# ------------------------------------------
+# ---------------- SIDEBAR ----------------
+sidebar = tk.Frame(root, bg="#020617", width=260)
+sidebar.pack(side="left", fill="y")
 
-def shake_window():
-    x = root.winfo_x()
-    y = root.winfo_y()
-    for i in range(10):
-        root.geometry(f"+{x+10}+{y}")
-        root.update()
-        root.after(25)
-        root.geometry(f"+{x-10}+{y}")
-        root.update()
-        root.after(25)
-    root.geometry(f"+{x}+{y}")
+tk.Label(
+    sidebar,
+    text="🔐 Secure\nFile Locker",
+    font=("Segoe UI", 18, "bold"),
+    fg="white",
+    bg="#020617"
+).pack(pady=30)
 
-def is_strong_password(pwd):
-    if len(pwd) < 8: return False
-    if not re.search(r"[A-Z]", pwd): return False
-    if not re.search(r"[a-z]", pwd): return False
-    if not re.search(r"[0-9]", pwd): return False
-    if not re.search(r"[@$!%*?&]", pwd): return False
-    return True
+tk.Label(
+    sidebar,
+    text="Password",
+    fg="#94a3b8",
+    bg="#020617",
+    font=("Segoe UI", 10)
+).pack(anchor="w", padx=30)
 
-def upload_file():
-    global attempts
-    file_path = filedialog.askopenfilename()
-    if not file_path: return
+password_entry = tk.Entry(
+    sidebar,
+    textvariable=password_var,
+    show="•",
+    font=("Segoe UI", 12),
+    width=18
+)
+password_entry.pack(padx=30, pady=(5, 5))
 
-    pwd = password_entry.get()
-    if pwd == "":
-        messagebox.showerror("Error", "Please enter password")
+show_btn = tk.Button(
+    sidebar, text="Show",
+    command=toggle_password,
+    bg="#020617",
+    fg="white",
+    bd=0,
+    cursor="hand2"
+)
+show_btn.pack(anchor="w", padx=30)
+
+# ---------------- CONTENT ----------------
+content = tk.Frame(root, bg="#0f172a")
+content.pack(expand=True, fill="both")
+
+title = tk.Label(
+    content,
+    text="Secure File Locker",
+    font=("Segoe UI", 26, "bold"),
+    bg="#0f172a",
+    fg="white"
+)
+title.pack(pady=(60, 10))
+
+subtitle = tk.Label(
+    content,
+    text="Encrypt files safely. Decrypt only with correct password.",
+    font=("Segoe UI", 12),
+    bg="#0f172a",
+    fg="#94a3b8"
+)
+subtitle.pack()
+
+file_label = tk.Label(
+    content,
+    text="No file selected",
+    bg="#0f172a",
+    fg="#e5e7eb",
+    font=("Segoe UI", 11)
+)
+file_label.pack(pady=40)
+
+# ---------------- BUTTON STYLE ----------------
+def action_button(text, color, cmd):
+    return tk.Button(
+        sidebar,
+        text=text,
+        command=cmd,
+        font=("Segoe UI", 11, "bold"),
+        bg=color,
+        fg="white",
+        bd=0,
+        padx=20,
+        pady=10,
+        cursor="hand2"
+    )
+
+# ---------------- ACTIONS ----------------
+def encrypt_action():
+    password = password_var.get().strip()
+
+    if not password:
+        messagebox.showerror("Error", "Enter password")
         return
 
-    if not is_strong_password(pwd):
-        attempts += 1
-        remaining = MAX_ATTEMPTS - attempts
-        shake_window()
-        if attempts >= MAX_ATTEMPTS:
-            messagebox.showerror("LOCKED","Too many failed attempts!\nApplication locked.")
-            root.destroy()
-        else:
-            messagebox.showerror("Weak Password", f"Weak password!\nAttempts left: {remaining}")
+    file_path = filedialog.askopenfilename(
+        title="Select file to encrypt",
+        initialdir=os.path.expanduser("~"),
+        filetypes=[("All Files", "*.*")]
+    )
+
+    if not file_path:
         return
 
-    encrypt_file(file_path, pwd)
-    messagebox.showinfo("Success","File Encrypted & Stored Successfully!")
+    try:
+        encrypted_path = encrypt_file(file_path, password)
+        messagebox.showinfo(
+            "Success",
+            f"File encrypted successfully!\nSaved in:\n{encrypted_path}"
+        )
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
 
-def download_file():
-    file_path = filedialog.askopenfilename(initialdir="../locker/")
-    if file_path:
-        decrypt_file(os.path.basename(file_path), password_entry.get())
-        messagebox.showinfo("Done","File Decrypted Successfully!")
 
-def view_files():
-    if not os.path.exists("../locker"):
-        os.mkdir("../locker")
-    files = os.listdir("../locker")
-    if not files:
-        messagebox.showinfo("Locker","No encrypted files found.")
-    else:
-        messagebox.showinfo("Encrypted Files","\n".join(files))
+def decrypt_action():
+    password = password_var.get().strip()
 
-def delete_file():
-    file_path = filedialog.askopenfilename(initialdir="../locker")
-    if file_path:
-        os.remove(file_path)
-        messagebox.showinfo("Deleted","Encrypted file deleted successfully!")
+    if not password:
+        messagebox.showerror("Error", "Enter password")
+        return
 
-# ---------- Buttons ----------
-tk.Button(root, text="Encrypt & Store", bg="#22C55E",
-          fg="black", width=22, font=("Segoe UI",11,"bold"),
-          command=upload_file).pack(pady=8)
+    file_path = filedialog.askopenfilename(
+        title="Select encrypted file",
+        initialdir="locker",
+        filetypes=[("Encrypted Files", "*.lock")]
+    )
 
-tk.Button(root, text="Decrypt & Download", bg="#38BDF8",
-          fg="black", width=22, font=("Segoe UI",11,"bold"),
-          command=download_file).pack(pady=4)
+    if not file_path:
+        return
 
-tk.Button(root, text="View Encrypted Files", bg="#3498DB",
-          fg="white", width=22, command=view_files).pack(pady=4)
+    try:
+        output_path = decrypt_file(file_path, password)
+        messagebox.showinfo(
+            "Success",
+            f"File decrypted successfully!\nRestored as:\n{output_path}"
+        )
+    except ValueError:
+        messagebox.showerror("Error", "Wrong password")
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
 
-tk.Button(root, text="Delete Encrypted File", bg="#E74C3C",
-          fg="white", width=22, command=delete_file).pack(pady=4)
 
-tk.Label(root, text="Developed by Divya Jangir | Secure File Locker v2.0",
-         bg="#0F172A", fg="#94A3B8", font=("Segoe UI",9)).pack(side="bottom", pady=6)
+
+# ---------------- BUTTONS ----------------
+action_button("🔒 Encrypt File", "#22c55e", encrypt_action).pack(pady=15)
+action_button("🔓 Decrypt File", "#3b82f6", decrypt_action).pack(pady=10)
+action_button("❌ Exit", "#ef4444", root.quit).pack(pady=40)
 
 root.mainloop()
