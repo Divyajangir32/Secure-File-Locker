@@ -1,48 +1,65 @@
-from cryptography.fernet import Fernet
-import hashlib
 import os
+import hashlib
 import base64
-PASSWORD_FILE = "../locker/.key"
-if not os.path.exists("../locker"):
-    os.mkdir("../locker")
+from cryptography.fernet import Fernet, InvalidToken
+
+LOCKER_DIR = "locker"
+
+def _ensure_locker():
+    if not os.path.exists(LOCKER_DIR):
+        os.makedirs(LOCKER_DIR)
+
+def _generate_key(password: str) -> bytes:
+    """
+    Same password -> same key
+    """
+    hashed = hashlib.sha256(password.encode()).digest()
+    return Fernet(base64.urlsafe_b64encode(hashed))._signing_key
+
+def _derive_fernet(password: str) -> Fernet:
+    hashed = hashlib.sha256(password.encode()).digest()
+    key = hashlib.sha256(hashed).digest()
+    return Fernet(base64.urlsafe_b64encode(key))
+
+def encrypt_file(file_path: str, password: str) -> str:
+    _ensure_locker()
+
+    with open(file_path, "rb") as f:
+        data = f.read()
+
+    fernet = _derive_fernet(password)
+    encrypted = fernet.encrypt(data)
+
+    filename = os.path.basename(file_path)
+    encrypted_path = os.path.join(LOCKER_DIR, filename + ".lock")
+
+    with open(encrypted_path, "wb") as f:
+        f.write(encrypted)
+
+    # ❗ delete original file
+    os.remove(file_path)
+
+    return encrypted_path
 
 
-def save_master_password(pwd):
-    with open(PASSWORD_FILE, "wb") as f:
-        f.write(generate_key(pwd))
+def decrypt_file(encrypted_path: str, password: str) -> str:
+    with open(encrypted_path, "rb") as f:
+        encrypted_data = f.read()
 
+    fernet = _derive_fernet(password)
 
-def verify_master_password(pwd):
-    if not os.path.exists(PASSWORD_FILE):
-        save_master_password(pwd)
-        return True
-    with open(PASSWORD_FILE, "rb") as f:
-        return f.read() == generate_key(pwd)
+    try:
+        decrypted = fernet.decrypt(encrypted_data)
+    except InvalidToken:
+        raise ValueError("Wrong password")
 
+    original_name = os.path.basename(encrypted_path).replace(".lock", "")
+    output_path = os.path.join(os.path.dirname(encrypted_path), original_name)
 
+    with open(output_path, "wb") as f:
+        f.write(decrypted)
 
-def generate_key(password):
-    return hashlib.sha256(password.encode()).digest()
+    # ❗ delete encrypted file
+    os.remove(encrypted_path)
 
-def encrypt_file(filepath, password):
-    key = generate_key(password)
-    f = Fernet(base64.urlsafe_b64encode(key))
-
-    with open(filepath, "rb") as file:
-        data = file.read()
-
-    filename = os.path.basename(filepath)
-
-    with open(os.path.join("../locker", filename), "wb") as enc:
-        enc.write(f.encrypt(data))
-
-
-def decrypt_file(filename, password):
-    key = generate_key(password)
-    f = Fernet(base64.urlsafe_b64encode(key))
-
-    with open("../locker/" + filename, 'rb') as file:
-        encrypted = file.read()
-
-    with open("../decrypted_" + filename, 'wb') as dec:
-        dec.write(f.decrypt(encrypted))
+    return output_path
